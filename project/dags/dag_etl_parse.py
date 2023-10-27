@@ -36,7 +36,7 @@ def etl_and_parse():
             data = pd.read_sql_query(f"""Select * from {table}""", con=connect)
             transformer = Transform(data)
             transform_data = transformer.transform()
-            transform_data.to_sql(f'DWH_{table[4:]}', con=connect, if_exists='replace', index=False)
+            transform_data.to_sql(f'DWH_{table[4:]}', con=connect, if_exists='append', index=False)
             dwh_tables_list.append(f'DWH_{table[4:]}')
         return dwh_tables_list
 
@@ -47,7 +47,10 @@ def etl_and_parse():
         for table in tables_list:
             data = pd.read_sql_query(f"""Select * from {table}""", con=connect)
             frames.append(data)
-        result = pd.merge(frames[0], pd.merge(frames[1], frames[2], on='customer_id'), on='customer_id')
+        if len(frames) > 1:
+            result = pd.merge(frames[0], pd.merge(frames[1], frames[2], on='customer_id'), on='customer_id')
+        else:
+            result = frames[0]
         cleaner = Cleaner(result)
         result = cleaner.cleaning()
         result.to_sql('DM_Sales', con=connect, if_exists='replace')
