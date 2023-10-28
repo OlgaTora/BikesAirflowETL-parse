@@ -78,9 +78,9 @@ def etl_and_parse():
         reader.execute_sql_script(s, file=False)
         return 'DWH_parser'
 
-    #data = extract_data_from_files()
-    #dwh_tables_list = create_dwh(data)
-    #mart_table = create_data_mart(dwh_tables_list)
+    data = extract_data_from_files()
+    dwh_tables_list = create_dwh(data)
+    mart_table = create_data_mart(dwh_tables_list)
 
     category_list = ['velosipednie-sumki', 'fonari', 'zamki', 'krilya', 'flagi', 'bagajniki']
     extract_data = extract_web_data.expand(category_name=category_list)
