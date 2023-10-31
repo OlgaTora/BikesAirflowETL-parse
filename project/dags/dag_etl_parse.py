@@ -4,13 +4,13 @@ from airflow.decorators import dag, task
 from config.config import db, input_path, archive_path
 from dags.etl.cleaner import Cleaner
 from dags.etl.transform import Transform
+from dags.sql_scripts.table_creator import TableCreator
 
 from etl.connection import Connection
 from etl.sqlreader import SQLReader
 from etl.extractdata import ExtractData
 from airflow.utils.dates import days_ago
 from airflow.decorators import dag, task
-from sql_scripts.union_tables import union_equal_tables
 from dags.parser.parser import Parser
 
 
@@ -71,11 +71,11 @@ def etl_and_parse():
     def save_parse_data2dwh(list_tables):
         connect = Connection(db)
         reader = SQLReader(connect)
-        tables = union_equal_tables(list_tables)
-        s = f"""
-        Create table if not EXISTS DWH_parser as {tables}
-        """
-        reader.execute_sql_script(s, file=False)
+        table_name = 'DWH_parser'
+        columns = ['item_name', 'price']
+        table_creator = TableCreator(table_name, columns, list_tables)
+        table = table_creator.create_table()
+        reader.execute_sql_script(table, file=False)
         return 'DWH_parser'
 
     data = extract_data_from_files()

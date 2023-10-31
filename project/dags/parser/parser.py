@@ -15,8 +15,8 @@ class Parser:
         response = requests.get(f'https://www.velostrana.ru/veloaksessuary/{self.category_name}/{page_number}.html')
         soup = BeautifulSoup(response.text)
         all_items = soup.find_all('div', {"class": 'product-card'})
-        logger.info('Get data from site')
         if len(all_items):
+            logger.info(f'Get data from {page_number} page')
             return all_items
         else:
             return None
@@ -36,7 +36,6 @@ class Parser:
                 d['price'].append(price)
             else:
                 d['price'].append("NaN")
-        logger.info('Create dataframe from 1 page')
         return pd.DataFrame(d)
 
     def take_all_files(self):
@@ -44,12 +43,11 @@ class Parser:
         page_number = 1
         while True:
             data = self.get_data(page_number)
-            print(f'{page_number} page_number')
             if data is None:
                 break
             df = self.create_dataframe(data)
             buf.append(df)
             page_number += 1
-        full_data = pd.concat(buf)
+        full_data = pd.concat(buf, ignore_index=True)
         logger.info('Create dataframe from all pages in category')
         return full_data
